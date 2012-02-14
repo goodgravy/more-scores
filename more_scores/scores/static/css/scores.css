@@ -1,0 +1,13 @@
+html, body {
+	font: 14px Helvetica, Arial, sans-serif;
+	margin: 0px;
+}
+
+#shell {
+	width: 900px;
+	margin: 0 auto;
+}
+
+table.points {
+	width: 880px
+}

@@ -1,0 +1,26 @@
+{% load mustachejs %}
+<html>
+<head>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/mustache.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/underscore.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/backbone.js"></script>
+	<script type='text/javascript' src='http://www.google.com/jsapi'></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/scores.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/chart.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/routes.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/views.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/models.js"></script>
+	<script type='text/javascript'>
+		google.load('visualization', '1', {'packages':['annotatedtimeline']});
+		google.setOnLoadCallback(MoreScores.init);
+	</script>
+	<link type="text/css" rel="stylesheet" href="{{STATIC_URL}}css/scores.css" />
+</head>
+<body>
+	{% mustachejs "scores_view" %}
+	{% mustachejs "points_list" %}
+	{% mustachejs "points_list_item" %}
+	<div id="shell"></div>
+</body>
+</html>

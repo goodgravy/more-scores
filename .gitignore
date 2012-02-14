@@ -1,0 +1,7 @@
+bin
+lib
+src
+include
+more_scores/.hg
+more_scores/sqlite.db
+.Python
