@@ -13,26 +13,26 @@ AUTH_PROFILE_MODULE = 'scores.UserProfile'
 
 MANAGERS = ADMINS
 
-DATABASES = {
-	'default': {
-		'ENGINE': 'django.db.backends.sqlite3',
-		'NAME': 'sqlite.db',
-		'USER': '',
-		'PASSWORD': '',
-		'HOST': '',
-		'PORT': '',
-	}
-}
 #DATABASES = {
 #	'default': {
-#		'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#		'NAME': 'scores_dev',
+#		'ENGINE': 'django.db.backends.sqlite3',
+#		'NAME': 'sqlite.db',
 #		'USER': '',
 #		'PASSWORD': '',
 #		'HOST': '',
 #		'PORT': '',
 #	}
 #}
+DATABASES = {
+	'default': {
+		'ENGINE': 'django.db.backends.postgresql_psycopg2',
+		'NAME': 'scores_dev',
+		'USER': 'james',
+		'PASSWORD': 'blue label',
+		'HOST': 'localhost',
+		'PORT': '',
+	}
+}
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name

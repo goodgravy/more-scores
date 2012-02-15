@@ -69,10 +69,10 @@ class Result(models.Model):
 		
 		for team, multiplier in ((self.winner, 1), (self.loser, -1)):
 			for player in team.users.all():
-				points_change, created = PointsChange.objects.get_or_create(
-					user=player,
-					result=self,
-				)
+				try:
+					points_change = PointsChange.objects.get(user=player, result=self)
+				except PointsChange.DoesNotExist:
+					points_change = PointsChange(user=player, result=self)
 				points_change.points = self.points * multiplier
 				points_change.save()
 		
