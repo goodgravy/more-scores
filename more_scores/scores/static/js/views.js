@@ -92,9 +92,19 @@ MoreScores.Views.PointsListItem = Backbone.View.extend({
 		this.render();
 	},
 	render: function() {
+		var json = this.model.toJSON();
+		var played = json.played;
+		if (played.getHours() === 0) {
+			// just a Date, not a Datetime
+			var format = "d-MMM-yyyy";
+		} else {
+			// Datetime
+			var format = "d-MMM-yyyy HH:mm:ss";
+		}
+		json.played = played.toString(format);
 		this.$el.html(Mustache.to_html(
 			Mustache.TEMPLATES.points_list_item,
-			this.model.toJSON()
+			json
 		));
 		return this;
 	}
