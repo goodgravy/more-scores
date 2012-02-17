@@ -91,6 +91,17 @@ MoreScores.Views.PointsListItem = Backbone.View.extend({
 	initialize: function() {
 		this.render();
 	},
+
+	_pointsToColor: function(points) {
+		var points = Math.abs(points);
+		var upToFifty = (points - 50) / 2;
+		var redPercent = 50 + upToFifty;
+		var bluePercent = 100 - upToFifty;
+		var redColor = redPercent * 2.55;
+		var blueColor = bluePercent * 2.55;
+		return Math.floor(redColor).toString(16) + 'CC' + Math.floor(blueColor).toString(16);
+	},
+
 	render: function() {
 		var json = this.model.toJSON();
 		var played = json.played;
@@ -102,6 +113,7 @@ MoreScores.Views.PointsListItem = Backbone.View.extend({
 			var format = "d-MMM-yyyy HH:mm:ss";
 		}
 		json.played = played.toString(format);
+		this.$el.attr({style: "background-color: #"+this._pointsToColor(json.points)});
 		this.$el.html(Mustache.to_html(
 			Mustache.TEMPLATES.points_list_item,
 			json

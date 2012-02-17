@@ -11,3 +11,7 @@ html, body {
 table.points {
 	width: 880px
 }
+
+a:visited {
+	color: #2800E8;
+}

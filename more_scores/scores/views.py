@@ -27,5 +27,9 @@ def results(request, username=None):
 
 	
 	mimetype = 'application/javascript'
-	# data = serializers.serialize('json', response)
 	return HttpResponse(json.dumps(response), mimetype)
+
+def add_result(request):
+	if request.method != 'POST':
+		import django
+		raise django.exce
