@@ -137,6 +137,7 @@ INSTALLED_APPS = (
 	'south',
 	"compressor",
 	"mustachejs",
+	"djangorestframework",
 )
 
 # A sample logging configuration. The only tangible logging

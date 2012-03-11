@@ -6,6 +6,12 @@ var MoreScores = {
 
 	init: function () {
 		MoreScores.router = new MoreScores.Router();
-		Backbone.history.start();
+		MoreScores.Collections.results = new MoreScores.Collections.Results;
+		MoreScores.Collections.users = new MoreScores.Collections.Users;
+		MoreScores.Collections.users.fetch({
+			success: function() {
+				Backbone.history.start()
+			}
+		});
 	}
 };

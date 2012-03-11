@@ -2,33 +2,50 @@ MoreScores.Router = Backbone.Router.extend({
 
 	routes: {
 		"": "index",
+		"result/add": "result_add",
+		"result": "result",
 		"user/:username": "user"
 	},
 
-	_handlePointsChanges: function(url, pageTitle) {
-		$.ajax({
-			url: url,
-			dataType: 'json',
-			success: function(data) {
-				var rawPoints = new MoreScores.Collections.PointsChanges(data);
-				var cumulativePoints = new MoreScores.Collections.CumulativePoints();
-				cumulativePoints.cumulatePoints(rawPoints);
-
-				var scoreView = new MoreScores.Views.ScoresView({
-					rawPoints: rawPoints,
-					cumulativePoints: cumulativePoints,
-					pageTitle: pageTitle
-				}).show();
-
-			}
-		});
-	},
-
 	index: function() {
-		this._handlePointsChanges('/results', "All Scores");
+		var indexView = new MoreScores.Views.Index;
+		indexView.show();
 	},
 	
+	result: function() {
+		var resultsView = new MoreScores.Views.Results({
+			collection: MoreScores.Collections.results
+		});
+		MoreScores.Collections.results.fetch();
+		resultsView.show();
+	},
+
+	result_add: function() {
+		var resultAddView = new MoreScores.Views.ResultAdd({
+			collection: MoreScores.Collections.results
+		});
+		resultAddView.show();
+	},
+
 	user: function(username) {
-		this._handlePointsChanges('/results/user/'+username, "Scores for {{ name }}");
-	}
+		var userInResult = function(username, result) {
+			return _.contains(
+					_(result.get('winner').users).pluck('username'),
+					username
+				) ||
+				_.contains(
+					_(result.get('loser').users).pluck('username'),
+					username
+				);
+		}
+
+		var resultsView = new MoreScores.Views.Results({
+			collection: MoreScores.Collections.results,
+			filterFn: function(result) {
+				return userInResult(username, result);
+			}
+		});
+		MoreScores.Collections.results.fetch();
+		resultsView.show();
+	},
 });
