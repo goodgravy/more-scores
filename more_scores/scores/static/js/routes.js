@@ -13,11 +13,13 @@ MoreScores.Router = Backbone.Router.extend({
 	},
 	
 	result: function() {
-		var resultsView = new MoreScores.Views.Results({
-			collection: MoreScores.Collections.results
-		});
+		if (!this.resultsView) {
+			this.resultsView = new MoreScores.Views.Results({
+				collection: MoreScores.Collections.results
+			});
+		}
+		this.resultsView.show();
 		MoreScores.Collections.results.fetch();
-		resultsView.show();
 	},
 
 	result_add: function() {
