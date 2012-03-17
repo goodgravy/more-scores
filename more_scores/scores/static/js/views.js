@@ -187,7 +187,6 @@ MoreScores.Views.ResultAdd = MoreScores.Views.Page.extend({
 			winners: winners,
 			losers: losers
 		});
-		MoreScores.router.navigate('result', {trigger: true});
 	}
 });
 
