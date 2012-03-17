@@ -151,7 +151,11 @@ MoreScores.Collections.Results = Backbone.Collection.extend({
 
 MoreScores.Collections.Users = Backbone.Collection.extend({
 	url: '/user',
-	model: MoreScores.Models.User
+	model: MoreScores.Models.User,
+
+	comparator: function(user) {
+		return user.id;
+	}
 });
 
 function isoStringToDate(string) {
@@ -163,11 +167,19 @@ function isoStringToDate(string) {
 	return new Date(match[1], match[2] - 1, match[3], match[4], match[5], match[6]);
 }
 function dateToIsoString(date) {
+	function pad(number, length) {
+		var str = '' + number;
+		while (str.length < length) {
+			str = '0' + str;
+		}
+		return str;
+	}
+
 	var isoString = date.getFullYear() + '-' +
-		(date.getMonth() + 1) + '-' +
-		date.getDate() + ' ' +
-		date.getHours() + ':' +
-		date.getMinutes() + ':' +
-		date.getSeconds();
+		pad((date.getMonth() + 1), 2) + '-' +
+		pad(date.getDate(), 2) + ' ' +
+		pad(date.getHours(), 2) + ':' +
+		pad(date.getMinutes(), 2) + ':' +
+		pad(date.getSeconds(), 2);
 	return isoString;
 }

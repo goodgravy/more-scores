@@ -126,9 +126,12 @@ MoreScores.Views.Result = Backbone.View.extend({
 	},
 
 	render: function() {
+		var thisJ = this.model.toJSON();
+		thisJ.winners = _.pluck(thisJ.winners, 'first_name').join(" & ");
+		thisJ.losers = _.pluck(thisJ.losers, 'first_name').join(" & ");
 		this.$el.html(Mustache.to_html(
 			Mustache.TEMPLATES.result,
-			this.model.toJSON()
+			thisJ
 		));
 		return this;
 	}
