@@ -1,3 +1,11 @@
+function pad(number, length) {
+	var str = '' + number;
+	while (str.length < length) {
+		str = '0' + str;
+	}
+	return str;
+}
+
 function isoStringToDate(string) {
 	var isoDate = /(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/;
 	var match = isoDate.exec(string);
@@ -7,13 +15,6 @@ function isoStringToDate(string) {
 	return new Date(match[1], match[2] - 1, match[3], match[4], match[5], match[6]);
 }
 function dateToIsoString(date) {
-	function pad(number, length) {
-		var str = '' + number;
-		while (str.length < length) {
-			str = '0' + str;
-		}
-		return str;
-	}
 
 	var isoString = date.getFullYear() + '-' +
 		pad((date.getMonth() + 1), 2) + '-' +
@@ -23,8 +24,15 @@ function dateToIsoString(date) {
 		pad(date.getSeconds(), 2);
 	return isoString;
 }
+function percentToSpectrum (percent) {
+	// translate a 0..100 value to a HSL color value
+	return "hsl(210, "+percent+"%, "+(100-percent/2)+"%)";
+}
 function toDataTableJSON (results, users) {
-	var cols = [{id: "played", label: "played", type: "date"}];
+	var cols = [
+		{id: "played", label: "Played", type: "date"},
+		{id: "points", label: "Points", type: "number"}
+	];
 	users.each(function(user) {
 		cols.push({
 			id: user.get('username'),
@@ -56,10 +64,16 @@ function toDataTableJSON (results, users) {
 				yearMonthDate[2],
 				spacing * index
 			);
-			var row = {c:[{
-				v: artificialTime,      // time as used on graph
-				f: dateToIsoString(result.get('played')) // time as displayed
-			}]};
+			var row = {c:[
+				{
+					v: artificialTime,      // time as used on graph
+					f: dateToIsoString(result.get('played')) // time as displayed
+				},
+				{
+					v: result.get('points'),
+					p: {style: "background-color: "+percentToSpectrum(result.get('points'))+";"}
+				}
+			]};
 			users.each(function(user) {
 				var cell = { v: result.get('userPoints')[user.get('username')] };
 				if (_.contains(_.pluck(result.get('winners'), 'username'), user.get('username'))) {

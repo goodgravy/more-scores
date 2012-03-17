@@ -60,25 +60,26 @@ MoreScores.Collections.Results = Backbone.Collection.extend({
 		MoreScores.Collections.users.each(function (user) {
 			user.set({'points': 0});
 		});
+		function realUser(userJson) {
+			// return existing user matching userJson, or create a new one in collection
+			var user = MoreScores.Collections.users.get(userJson.id);
+			if (!user) {
+				user = MoreScores.Collections.users.add(userJson);
+			}
+			return user;
+		}
 
 		function teamPoints(users) {
 			var points = _.reduce(users, function(memo, user) {
-				var savedUser = MoreScores.Collections.users.get(user.id);
-				if (!savedUser) {
-					savedUser = MoreScores.Collections.users.add(user);
-				}
+				var savedUser = realUser(user);
 				return memo + (savedUser.get('points') || 0);
 			}, 0);
 			return Math.floor(points / users.length);
 		}
-		function processUserPoints(user, points, add, pointsAggr) {
-			var savedUser = MoreScores.Collections.users.get(user.id);
-			if (!savedUser) {
-				savedUser = MoreScores.Collections.users.add(user);
-			}
+		function processUserPoints(user, points, add) {
+			var savedUser = realUser(user);
 			var multiplier = add? 1: -1;
 			savedUser.set({'points': (savedUser.get('points') || 0) + multiplier * points});
-			pointsAggr[savedUser.get('username')] = savedUser.get('points');
 		}
 
 		that.each(function(result) {
@@ -94,6 +95,11 @@ MoreScores.Collections.Results = Backbone.Collection.extend({
 			_.each(result.get('losers'), function(user) {
 				processUserPoints(user, resultPoints, false, pointsObj);
 			});
+
+			MoreScores.Collections.users.each(function(user) {
+				pointsObj[user.get('username')] = user.get('points');
+			});
+
 			result.set({'points': resultPoints});
 			result.set({'userPoints': pointsObj});
 		});

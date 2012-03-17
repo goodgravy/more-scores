@@ -117,7 +117,7 @@ MoreScores.Views.ResultsList = Backbone.View.extend({
 		var table = new google.visualization.Table(this.el);
 		var results = this.collection.filter(this.filterFn);
 		var data = new google.visualization.DataTable(toDataTableJSON(results, MoreScores.Collections.users));
-		table.draw(data, {showRowNumber: true, sortAscending: false, sortColumn: 0});
+		table.draw(data, {sortAscending: false, sortColumn: 0, allowHtml: true});
 		return this;
 	}
 });
