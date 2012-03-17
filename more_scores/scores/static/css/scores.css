@@ -20,18 +20,9 @@ a {
 	text-decoration: none;
 }
 
-table.results-list {
+table {
 	margin-top: 20px;
 	width: 100%;
-}
-table.results-list thead tr {
-	height: 40px;
-}
-th.thin {
-	-webkit-transform: rotate(-60deg);
-	-moz-transform: rotate(-60deg);
-	-ms-transform: rotate(-60deg);
-	-o-transform: rotate(-60deg);
 }
 td.winner {
 	background-color: #dfd;

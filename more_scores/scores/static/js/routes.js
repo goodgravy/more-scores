@@ -33,11 +33,11 @@ MoreScores.Router = Backbone.Router.extend({
 	user: function(username) {
 		var userInResult = function(username, result) {
 			return _.contains(
-					_(result.get('winner').users).pluck('username'),
+					_(result.get('winners')).pluck('username'),
 					username
 				) ||
 				_.contains(
-					_(result.get('loser').users).pluck('username'),
+					_(result.get('losers')).pluck('username'),
 					username
 				);
 		}

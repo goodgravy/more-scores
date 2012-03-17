@@ -13,9 +13,8 @@ function AppView () {
 		}
 
 		this.currentView = view;
-		this.currentView.render();
-
 		$("#shell").html(this.currentView.el);
+		this.currentView.render();
 	}
 }
 
@@ -29,41 +28,22 @@ MoreScores.Views.Index = Backbone.View.extend({
 MoreScores.Views.Results = Backbone.View.extend({
 	initialize: function(options) {
 		this.globalFilterFn = options.filterFn || function() { return true; };
-		this.collection.on('new-scores', this.globalFilter, this);
+		this.collection.on('new-scores', this.render, this);
 	},
 	onClose: function() {
-		this.collection.off('new-scores', this.globalFilter);
-	},
-
-	globalFilter: function(results) {
-		// stash original results for undoing filters later
-		// apply global filters while we're at it (e.g. by user)
-		this._origColl = results.filter(this.globalFilterFn);
-		this.collection.reset(this._origColl, {silent:true});
-		this.collection.trigger('global-filter', this.collection);
-		this.collection.trigger('time-filter', this.collection);
-	},
-
-	filter: function(filterFn) {
-		var filterFn = filterFn || function() { return true; }
-		this.collection.reset(this._origColl, {silent:true});
-		this.collection.reset(this.collection.filter(filterFn));
-		this.collection.trigger('time-filter', this.collection);
+		this.collection.off('new-scores', this.render);
 	},
 
 	render: function(filterFn) {
-		var graphView = new MoreScores.Views.ResultsGraph({
-			parent: this,
-			collection: this.collection
-		});
-		this.listView = new MoreScores.Views.ResultsList({
-			parent: this,
-			filterFn: filterFn,
-			collection: this.collection
-		});
+		this.$el.html('');
+		var filtered = this.collection.filter(this.globalFilterFn);
+		if (filtered.length === 0) { return; }
+		var graphView = new MoreScores.Views.ResultsGraph({ collection: filtered });
+		var listView = new MoreScores.Views.ResultsList({ collection: filtered });
 		
 		this.$el.append(graphView.el);
-		this.$el.append(this.listView.el);
+		graphView.render();
+		this.$el.append(listView.render().el);
 		return this;
 	}
 });
@@ -71,25 +51,17 @@ MoreScores.Views.Results = Backbone.View.extend({
 MoreScores.Views.ResultsGraph = Backbone.View.extend({
 	className: "graph-container",
 
-	initialize: function(options) {
-		this.collection.on("global-filter", this.render, this);
-		this.parent = options.parent;
-	},
-	onClose: function() {
-		this.collection.off('global-filter', this.render);
-	},
-
-	render: function(results) {
+	render: function() {
 		var that = this;
-		var data = new google.visualization.DataTable(toDataTableJSON(results, MoreScores.Collections.users));
-		var chart = new google.visualization.AnnotatedTimeLine(this.$el.get(0));
+		var data = new google.visualization.DataTable(toDataTableJSON(this.collection, MoreScores.Collections.users));
+		var chart = new google.visualization.AnnotatedTimeLine(this.el);
 		var rangeChange = function() {
 			var startEnd = chart.getVisibleChartRange();
 			var filterFn = function(result) {
 				return result.get('played') >= startEnd.start &&
 					result.get('played') <= startEnd.end;
 			}
-			that.parent.filter(filterFn);
+			MoreScores.dispatcher.trigger('results:time-filter', filterFn);
 		}
 		google.visualization.events.addListener(chart, 'ready', function() {
 			google.visualization.events.addListener(
@@ -106,16 +78,16 @@ MoreScores.Views.ResultsList = Backbone.View.extend({
 	className: "table-container",
 
 	initialize: function(options) {
-		this.filterFn = options.filterFn || function() { return true; };
-		this.collection.on('time-filter', this.render, this);
+		MoreScores.dispatcher.on('results:time-filter', this.render, this);
 	},
 	onClose: function() {
-		this.collection.off('time-filter', this.render);
+		MoreScores.dispatcher.off('results:time-filter', this.render);
 	},
 	
-	render: function() {
+	render: function(filterFn) {
+		var realFilterFn = filterFn || function() { return true; };
 		var table = new google.visualization.Table(this.el);
-		var results = this.collection.filter(this.filterFn);
+		var results = this.collection.filter(realFilterFn);
 		var data = new google.visualization.DataTable(toDataTableJSON(results, MoreScores.Collections.users));
 		table.draw(data, {sortAscending: false, sortColumn: 0, allowHtml: true});
 		return this;

@@ -31,7 +31,6 @@ function percentToSpectrum (percent) {
 function toDataTableJSON (results, users) {
 	var cols = [
 		{id: "played", label: "Played", type: "date"},
-		{id: "points", label: "Points", type: "number"}
 	];
 	users.each(function(user) {
 		cols.push({
@@ -40,6 +39,10 @@ function toDataTableJSON (results, users) {
 			type: "number"
 		});
 	});
+	// points column last
+	cols.push(
+		{id: "points", label: "Points", type: "number"}
+	);
 
 	// pre-process results into chunks of 1 day, to allow even spacing across days
 	var daysResults = {};
@@ -58,6 +61,7 @@ function toDataTableJSON (results, users) {
 		var spacing = Math.floor(24.0 / results.length);
 
 		_.each(results, function(result, index) {
+			var resultPoints = result.get('userPoints') || {};
 			var artificialTime = new Date(
 				yearMonthDate[0],
 				yearMonthDate[1],
@@ -68,21 +72,28 @@ function toDataTableJSON (results, users) {
 				{
 					v: artificialTime,      // time as used on graph
 					f: dateToIsoString(result.get('played')) // time as displayed
-				},
+				}
+			]};
+			users.each(function(user) {
+				if (user.get('username') in resultPoints) {
+					var cell = { v: resultPoints[user.get('username')] };
+					// XXX: need to manually add-in google classes, to avoid overwriting :/
+					if (_.contains(_.pluck(result.get('winners'), 'username'), user.get('username'))) {
+						cell.p = {className: 'google-visualization-table-td google-visualization-table-td-number winner'};
+					} else if (_.contains(_.pluck(result.get('losers'), 'username'), user.get('username'))) {
+						cell.p = {className: 'google-visualization-table-td google-visualization-table-td-number loser'};
+					}
+				} else {
+					cell = { v: null };
+				}
+				row.c.push(cell);
+			});
+			row.c.push(
 				{
 					v: result.get('points'),
 					p: {style: "background-color: "+percentToSpectrum(result.get('points'))+";"}
 				}
-			]};
-			users.each(function(user) {
-				var cell = { v: result.get('userPoints')[user.get('username')] };
-				if (_.contains(_.pluck(result.get('winners'), 'username'), user.get('username'))) {
-					cell.p = {className: 'google-visualization-table-td google-visualization-table-td-number winner'};
-				} else if (_.contains(_.pluck(result.get('losers'), 'username'), user.get('username'))) {
-					cell.p = {className: 'google-visualization-table-td google-visualization-table-td-number loser'};
-				}
-				row.c.push(cell);
-			});
+			);
 			daysResults.push(row);
 		});
 		return daysResults;
