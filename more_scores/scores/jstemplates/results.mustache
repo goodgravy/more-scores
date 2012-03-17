@@ -1,10 +1,13 @@
-<table>
+<table class="results-list">
 	<thead>
 		<tr>
 			<th>When</th>
 			<th>Winner</th>
 			<th>Loser</th>
 			<th>Points</th>
+			{{#users}}
+			<th class="thin">{{first_name}}</th>
+			{{/users}}
 		</tr>
 	</thead>
 	<tbody>

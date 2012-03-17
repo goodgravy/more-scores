@@ -106,7 +106,9 @@ MoreScores.Views.ResultsList = Backbone.View.extend({
 	},
 	
 	render: function() {
-		var html = $(Mustache.to_html(Mustache.TEMPLATES.results, {}));
+		var html = $(Mustache.to_html(Mustache.TEMPLATES.results, {
+			users: MoreScores.Collections.users.toJSON()
+		}));
 		var filteredListResults = this.collection.filter(this.filterFn);
 		for (var idx=filteredListResults.length - 1; idx >= 0; idx-=1) {
 			var result = filteredListResults[idx];
