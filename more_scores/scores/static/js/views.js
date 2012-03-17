@@ -108,10 +108,11 @@ MoreScores.Views.ResultsList = Backbone.View.extend({
 	render: function() {
 		var html = $(Mustache.to_html(Mustache.TEMPLATES.results, {}));
 		var filteredListResults = this.collection.filter(this.filterFn);
-		_.each(filteredListResults, function(result) {
+		for (var idx=filteredListResults.length - 1; idx >= 0; idx-=1) {
+			var result = filteredListResults[idx];
 			var resultView = new MoreScores.Views.Result({model: result});
 			$('tbody', html).append(resultView.render().el);
-		});
+		};
 		this.$el.html(html);
 		return this;
 	}

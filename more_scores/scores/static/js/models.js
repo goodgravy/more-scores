@@ -34,7 +34,7 @@ function calculatePoints(pointsDiff) {
 
 	// negative to cause bigger diff to result in smaller points
 	var scaledDiff = pointsDiff / -1000;
-	return Math.floor ( ( rationalTanh(scaledDiff) + 1 ) * 50 )
+	return Math.floor ( ( rationalTanh(scaledDiff) + 1 ) * 50 );
 }
 
 MoreScores.Collections.Results = Backbone.Collection.extend({
@@ -56,19 +56,19 @@ MoreScores.Collections.Results = Backbone.Collection.extend({
 			that.off('reset');
 			function teamPoints(users) {
 				var points = _.reduce(users, function(memo, user) {
-					var user = MoreScores.Collections.users.get(user.id) ||
+					var savedUser = MoreScores.Collections.users.get(user.id) ||
 						new MoreScores.Models.User(user);
-					return memo + (user.get('points') || 0);
+					return memo + (savedUser.get('points') || 0);
 				}, 0);
 				return Math.floor(points / users.length);
 			}
 			function processUserPoints(user, points, add, pointsAggr) {
-				var user = MoreScores.Collections.users.get(user.id) ||
+				var savedUser = MoreScores.Collections.users.get(user.id) ||
 					new MoreScores.Models.User(user);
 				var multiplier = add? 1: -1;
-				user.set('points',
-						(user.get('points') || 0) + multiplier * points);
-				pointsAggr[user.get('username')] = user.get('points');
+				savedUser.set('points',
+						(savedUser.get('points') || 0) + multiplier * points);
+				pointsAggr[savedUser.get('username')] = savedUser.get('points');
 			}
 
 			that.each(function(result) {
@@ -107,23 +107,44 @@ MoreScores.Collections.Results = Backbone.Collection.extend({
 			});
 		});
 
-		var rows = [];
+		// pre-process results into chunks of 1 day, to allow even spacing across days
+		var daysResults = {};
 		this.each(function(result) {
-			var row = {c:[{
-				v: result.get('played'),
-				f: result.get('played')
-			}]};
-			MoreScores.Collections.users.each(function(user) {
-				if (user.get('username') in result.get('userPoints')) {
-					row.c.push({
-						v: result.get('userPoints')[user.get('username')]
-					});
-				} else {
-					row.c.push(null);
-				}
-			});
-			rows.push(row);
+			var played = result.get('played');
+			var playedDate = [played.getFullYear(), played.getMonth(), played.getDate()].join("-");
+			daysResults[playedDate] = daysResults[playedDate] || [];
+			daysResults[playedDate].push(result);
 		});
+
+		// for each chunk, space the results out evenly across the day
+		function processDaysResults (rows, day, results) {
+			var yearMonthDate = day.split("-");
+			var spacing = Math.floor(24.0 / results.length);
+
+			_.each(results, function(result, index) {
+				var artificialTime = new Date(yearMonthDate[0], yearMonthDate[1], yearMonthDate[2], spacing * index);
+				var row = {c:[{
+					v: artificialTime,      // time as used on graph
+					f: result.get('played') // time as displayed
+				}]};
+				MoreScores.Collections.users.each(function(user) {
+					if (user.get('username') in result.get('userPoints')) {
+						row.c.push({ v: result.get('userPoints')[user.get('username')] });
+					} else {
+						row.c.push(null);
+					}
+				});
+				rows.push(row);
+			});
+		}
+
+		var rows = [];
+		for (var day in daysResults) {
+			if (daysResults.hasOwnProperty(day)) {
+				var results = daysResults[day];
+				processDaysResults(rows, day, results);
+			}
+		}
 		return {cols: cols, rows: rows}
 	}
 });
