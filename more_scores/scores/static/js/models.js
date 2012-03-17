@@ -44,56 +44,60 @@ MoreScores.Collections.Results = Backbone.Collection.extend({
 	comparator: function(result) {
 		return result.get('played');
 	},
-	
+
 	fetch: function() {
-		// idea here is for score re-calculation to only occur after
-		// we've done a fetch-and-reset - not a plain call to .reset()
+		Backbone.Collection.prototype.fetch.call(this, {
+			success: function(collection) {
+				collection._scoreResults();
+			}
+		});
+	},
+	
+	_scoreResults: function () {
 		var that = this;
-		this.on('reset', scoreResults, this);
-		Backbone.Collection.prototype.fetch.call(this);
-		
-		function scoreResults () {
-			that.off('reset');
-			function teamPoints(users) {
-				var points = _.reduce(users, function(memo, user) {
-					var savedUser = MoreScores.Collections.users.get(user.id) ||
-						new MoreScores.Models.User(user);
-					return memo + (savedUser.get('points') || 0);
-				}, 0);
-				return Math.floor(points / users.length);
-			}
-			function processUserPoints(user, points, add, pointsAggr) {
-				var savedUser = MoreScores.Collections.users.get(user.id) ||
-					new MoreScores.Models.User(user);
-				var multiplier = add? 1: -1;
-				savedUser.set('points',
-						(savedUser.get('points') || 0) + multiplier * points);
-				pointsAggr[savedUser.get('username')] = savedUser.get('points');
-			}
 
-			that.each(function(result) {
-				if(result.get('points')) {
-					// already scored this result
-					return;
+		// first reset the user scores: will be re-calculating them
+		MoreScores.Collections.users.each(function (user) {
+			user.set({'points': 0});
+		});
+
+		function teamPoints(users) {
+			var points = _.reduce(users, function(memo, user) {
+				var savedUser = MoreScores.Collections.users.get(user.id);
+				if (!savedUser) {
+					savedUser = MoreScores.Collections.users.add(user);
 				}
-				var winnerPoints = teamPoints(result.get('winners'));
-				var loserPoints = teamPoints(result.get('losers'));
-				var pointsDiff = winnerPoints - loserPoints;
-				var resultPoints = calculatePoints(pointsDiff);
-				var pointsObj = {};
-
-				_.each(result.get('winners'), function(user) {
-					processUserPoints(user, resultPoints, true, pointsObj);
-				});
-				_.each(result.get('losers'), function(user) {
-					processUserPoints(user, resultPoints, false, pointsObj);
-				});
-				result.set('points', resultPoints);
-				result.set('userPoints', pointsObj);
-				console.log(result.get('played')+': '+JSON.stringify(pointsObj));
-			});
-			that.trigger('new-scores', this);
+				return memo + (savedUser.get('points') || 0);
+			}, 0);
+			return Math.floor(points / users.length);
 		}
+		function processUserPoints(user, points, add, pointsAggr) {
+			var savedUser = MoreScores.Collections.users.get(user.id);
+			if (!savedUser) {
+				savedUser = MoreScores.Collections.users.add(user);
+			}
+			var multiplier = add? 1: -1;
+			savedUser.set({'points': (savedUser.get('points') || 0) + multiplier * points});
+			pointsAggr[savedUser.get('username')] = savedUser.get('points');
+		}
+
+		that.each(function(result) {
+			var winnerPoints = teamPoints(result.get('winners'));
+			var loserPoints = teamPoints(result.get('losers'));
+			var pointsDiff = winnerPoints - loserPoints;
+			var resultPoints = calculatePoints(pointsDiff);
+			var pointsObj = {};
+
+			_.each(result.get('winners'), function(user) {
+				processUserPoints(user, resultPoints, true, pointsObj);
+			});
+			_.each(result.get('losers'), function(user) {
+				processUserPoints(user, resultPoints, false, pointsObj);
+			});
+			result.set({'points': resultPoints});
+			result.set({'userPoints': pointsObj});
+		});
+		that.trigger('new-scores', this);
 	}
 });
 

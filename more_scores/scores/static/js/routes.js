@@ -1,5 +1,4 @@
 MoreScores.Router = Backbone.Router.extend({
-
 	routes: {
 		"": "index",
 		"result/add": "result_add",
@@ -7,18 +6,20 @@ MoreScores.Router = Backbone.Router.extend({
 		"user/:username": "user"
 	},
 
+	initialize: function (options) {
+		this.appView = new AppView;
+	},
+
 	index: function() {
 		var indexView = new MoreScores.Views.Index;
-		indexView.show();
+		this.appView.showView(indexView);
 	},
 	
 	result: function() {
-		if (!this.resultsView) {
-			this.resultsView = new MoreScores.Views.Results({
-				collection: MoreScores.Collections.results
-			});
-		}
-		this.resultsView.show();
+		var resultsView = new MoreScores.Views.Results({
+			collection: MoreScores.Collections.results
+		});
+		this.appView.showView(resultsView);
 		MoreScores.Collections.results.fetch();
 	},
 
@@ -26,7 +27,7 @@ MoreScores.Router = Backbone.Router.extend({
 		var resultAddView = new MoreScores.Views.ResultAdd({
 			collection: MoreScores.Collections.results
 		});
-		resultAddView.show();
+		this.appView.showView(resultAddView);
 	},
 
 	user: function(username) {
@@ -47,7 +48,7 @@ MoreScores.Router = Backbone.Router.extend({
 				return userInResult(username, result);
 			}
 		});
+		this.appView.showView(resultsView);
 		MoreScores.Collections.results.fetch();
-		resultsView.show();
-	},
+	}
 });

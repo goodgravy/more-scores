@@ -8,10 +8,7 @@ var MoreScores = {
 		MoreScores.router = new MoreScores.Router();
 		MoreScores.Collections.results = new MoreScores.Collections.Results;
 		MoreScores.Collections.users = new MoreScores.Collections.Users;
-		MoreScores.Collections.users.fetch({
-			success: function() {
-				Backbone.history.start()
-			}
-		});
+		MoreScores.Collections.users.fetch();
+		Backbone.history.start()
 	}
 };

@@ -23,9 +23,9 @@ function dateToIsoString(date) {
 		pad(date.getSeconds(), 2);
 	return isoString;
 }
-function toDataTableJSON (results) {
+function toDataTableJSON (results, users) {
 	var cols = [{id: "played", label: "played", type: "date"}];
-	MoreScores.Collections.users.each(function(user) {
+	users.each(function(user) {
 		cols.push({
 			id: user.get('username'),
 			label: user.get('first_name'),
@@ -60,7 +60,7 @@ function toDataTableJSON (results) {
 				v: artificialTime,      // time as used on graph
 				f: dateToIsoString(result.get('played')) // time as displayed
 			}]};
-			MoreScores.Collections.users.each(function(user) {
+			users.each(function(user) {
 				var cell = { v: result.get('userPoints')[user.get('username')] };
 				if (_.contains(_.pluck(result.get('winners'), 'username'), user.get('username'))) {
 					cell.p = {className: 'google-visualization-table-td google-visualization-table-td-number winner'};

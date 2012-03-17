@@ -1,36 +1,38 @@
-MoreScores.Views.Page = Backbone.View.extend({
-	className: "page",
-
-	initialize: function () {
-		this.render();
-	},
-	show: function () { var el = this.el;
-		if ($('.page, .loading').length) {
-			$('.page, .loading').not(el).remove();
-		}
-		$(el).appendTo('#shell').hide();
-		$(el).show();
-		this.postAdd();
-	},
-	
-	postAdd: function() {
-		/* override this with any code which needs to 
-		happen after the element is in the DOM */
+Backbone.View.prototype.close = function () {
+	this.remove();
+	this.off();
+	if (this.onClose) {
+		this.onClose();
 	}
-});
+}
 
-MoreScores.Views.Index = MoreScores.Views.Page.extend({
+function AppView () {
+	this.showView = function (view) {
+		if (this.currentView) {
+			this.currentView.close();
+		}
+
+		this.currentView = view;
+		this.currentView.render();
+
+		$("#shell").html(this.currentView.el);
+	}
+}
+
+MoreScores.Views.Index = Backbone.View.extend({
 	render: function() {
 		this.$el.append('<a href="#result">#result</a>');
 		this.$el.append('<a href="#result/add">#result/add</a>');
 	}
 });
 
-MoreScores.Views.Results = MoreScores.Views.Page.extend({
+MoreScores.Views.Results = Backbone.View.extend({
 	initialize: function(options) {
 		this.globalFilterFn = options.filterFn || function() { return true; };
 		this.collection.on('new-scores', this.globalFilter, this);
-		this.render();
+	},
+	onClose: function() {
+		this.collection.off('new-scores', this.globalFilter);
 	},
 
 	globalFilter: function(results) {
@@ -73,10 +75,13 @@ MoreScores.Views.ResultsGraph = Backbone.View.extend({
 		this.collection.on("global-filter", this.render, this);
 		this.parent = options.parent;
 	},
+	onClose: function() {
+		this.collection.off('global-filter', this.render);
+	},
 
 	render: function(results) {
 		var that = this;
-		var data = new google.visualization.DataTable(toDataTableJSON(results));
+		var data = new google.visualization.DataTable(toDataTableJSON(results, MoreScores.Collections.users));
 		var chart = new google.visualization.AnnotatedTimeLine(this.$el.get(0));
 		var rangeChange = function() {
 			var startEnd = chart.getVisibleChartRange();
@@ -102,24 +107,44 @@ MoreScores.Views.ResultsList = Backbone.View.extend({
 
 	initialize: function(options) {
 		this.filterFn = options.filterFn || function() { return true; };
-		this.collection.bind('time-filter', this.render, this);
+		this.collection.on('time-filter', this.render, this);
+	},
+	onClose: function() {
+		this.collection.off('time-filter', this.render);
 	},
 	
 	render: function() {
 		var table = new google.visualization.Table(this.el);
 		var results = this.collection.filter(this.filterFn);
-		var data = new google.visualization.DataTable(toDataTableJSON(results));
-		table.draw(data, {sortAscending: false, sortColumn: 0, allowHtml: true});
+		var data = new google.visualization.DataTable(toDataTableJSON(results, MoreScores.Collections.users));
+		table.draw(data, {showRowNumber: true, sortAscending: false, sortColumn: 0});
 		return this;
 	}
 });
 
-MoreScores.Views.ResultAdd = MoreScores.Views.Page.extend({
+MoreScores.Views.ResultAdd = Backbone.View.extend({
 	events: {
 		"click a.button.submit": "saveResult"
 	},
 
+	initialize: function() {
+		MoreScores.Collections.users.on('change reset add', this.render, this);
+		MoreScores.Collections.results.on('add', this.adding, this);
+		MoreScores.Collections.results.on('sync', this.render, this);
+	},
+	onClose: function() {
+		MoreScores.Collections.users.off('change reset add', this.render);
+		MoreScores.Collections.results.off('add', this.adding);
+		MoreScores.Collections.results.off('sync', this.render);
+	},
+
+	adding: function() {
+		$('a.button.submit').text('saving...');
+		this.events = {};
+	},
+
 	render: function() {
+		this.$el.html('');
 		this.leftUsers = new MoreScores.Collections.Users(MoreScores.Collections.users.toJSON());
 		this.rightUsers = new MoreScores.Collections.Users(MoreScores.Collections.users.toJSON());
 
