@@ -33,6 +33,12 @@ th.thin {
 	-ms-transform: rotate(-60deg);
 	-o-transform: rotate(-60deg);
 }
+td.winner {
+	background-color: #dfd;
+}
+td.loser {
+	background-color: #fdd;
+}
 
 .team-picker {
 	width: 200px;

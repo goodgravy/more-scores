@@ -76,7 +76,7 @@ MoreScores.Views.ResultsGraph = Backbone.View.extend({
 
 	render: function(results) {
 		var that = this;
-		var data = new google.visualization.DataTable(results.toDataTableJSON());
+		var data = new google.visualization.DataTable(toDataTableJSON(results));
 		var chart = new google.visualization.AnnotatedTimeLine(this.$el.get(0));
 		var rangeChange = function() {
 			var startEnd = chart.getVisibleChartRange();
@@ -106,35 +106,10 @@ MoreScores.Views.ResultsList = Backbone.View.extend({
 	},
 	
 	render: function() {
-		var html = $(Mustache.to_html(Mustache.TEMPLATES.results, {
-			users: MoreScores.Collections.users.toJSON()
-		}));
-		var filteredListResults = this.collection.filter(this.filterFn);
-		for (var idx=filteredListResults.length - 1; idx >= 0; idx-=1) {
-			var result = filteredListResults[idx];
-			var resultView = new MoreScores.Views.Result({model: result});
-			$('tbody', html).append(resultView.render().el);
-		};
-		this.$el.html(html);
-		return this;
-	}
-});
-
-MoreScores.Views.Result = Backbone.View.extend({
-	tagName: 'tr',
-
-	initialize: function() {
-		this.model.bind('change', this.render, this);
-	},
-
-	render: function() {
-		var thisJ = this.model.toJSON();
-		thisJ.winners = _.pluck(thisJ.winners, 'first_name').join(" & ");
-		thisJ.losers = _.pluck(thisJ.losers, 'first_name').join(" & ");
-		this.$el.html(Mustache.to_html(
-			Mustache.TEMPLATES.result,
-			thisJ
-		));
+		var table = new google.visualization.Table(this.el);
+		var results = this.collection.filter(this.filterFn);
+		var data = new google.visualization.DataTable(toDataTableJSON(results));
+		table.draw(data, {sortAscending: false, sortColumn: 0, allowHtml: true});
 		return this;
 	}
 });
