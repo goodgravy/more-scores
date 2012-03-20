@@ -6,7 +6,7 @@ class TeamField(forms.CharField):
 	def to_python(self, value):
 		users = [models.User.objects.get(pk=user.get('id')) for user in value]
 		for team in users[0].team_set.all():
-			if [user for user in team.users.all()] == users:
+			if set([user for user in team.users.all()]) == set(users):
 				return team
 		else:
 			raise forms.ValidationError( 
