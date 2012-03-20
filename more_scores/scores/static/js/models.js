@@ -1,3 +1,20 @@
+Backbone._sync = Backbone.sync;
+Backbone.sync = function(method, model, options) {
+	// add extra jQuery.ajax options to make requests work with Parse
+	options = options || {};
+	var url = _.isFunction(model.url) ? model.url() : model.url;
+	options.url = 'https://api.parse.com/1' + url;
+	options.contentType = 'application/json';
+	var headers = options.headers || {};
+	headers['X-Parse-Application-Id'] = MoreScores.config.appId;
+	headers['X-Parse-REST-API-Key'] = MoreScores.config.restKey;
+	options.headers = headers;
+	if (!options.url) {
+		params.url = getValue(model, 'url') || urlError();
+	}
+	return Backbone._sync.call(this, method, model, options);
+};
+
 MoreScores.Models.Result = Backbone.Model.extend({
 	parse: function(result) {
 		result.played = isoStringToDate(result.played);
@@ -38,7 +55,7 @@ function calculatePoints(pointsDiff) {
 }
 
 MoreScores.Collections.Results = Backbone.Collection.extend({
-	url: '/result',
+	url: '/classes/Result',
 	model: MoreScores.Models.Result,
 
 	comparator: function(result) {
@@ -108,7 +125,7 @@ MoreScores.Collections.Results = Backbone.Collection.extend({
 });
 
 MoreScores.Collections.Users = Backbone.Collection.extend({
-	url: '/user',
+	url: '/users',
 	model: MoreScores.Models.User,
 
 	comparator: function(user) {

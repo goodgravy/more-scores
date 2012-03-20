@@ -1,9 +1,10 @@
 MoreScores.Router = Backbone.Router.extend({
 	routes: {
 		"": "index",
-		"result/add": "result_add",
 		"result": "result",
-		"user/:username": "user"
+		"result/add": "result_add",
+		"result/user/:username": "result_user",
+		"user/login": "user_login"
 	},
 
 	initialize: function (options) {
@@ -30,7 +31,7 @@ MoreScores.Router = Backbone.Router.extend({
 		this.appView.showView(resultAddView);
 	},
 
-	user: function(username) {
+	result_user: function(username) {
 		var userInResult = function(username, result) {
 			return _.contains(
 					_(result.get('winners')).pluck('username'),
@@ -50,5 +51,10 @@ MoreScores.Router = Backbone.Router.extend({
 		});
 		this.appView.showView(resultsView);
 		MoreScores.Collections.results.fetch();
+	},
+
+	user_login: function() {
+		var loginView = new MoreScores.Views.Login;
+		this.appView.showView(loginView);
 	}
 });

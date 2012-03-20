@@ -13,16 +13,6 @@ AUTH_PROFILE_MODULE = 'scores.UserProfile'
 
 MANAGERS = ADMINS
 
-#DATABASES = {
-#	'default': {
-#		'ENGINE': 'django.db.backends.sqlite3',
-#		'NAME': 'sqlite.db',
-#		'USER': '',
-#		'PASSWORD': '',
-#		'HOST': '',
-#		'PORT': '',
-#	}
-#}
 DATABASES = {
 	'default': {
 		'ENGINE': 'django.db.backends.postgresql_psycopg2',

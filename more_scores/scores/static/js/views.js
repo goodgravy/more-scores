@@ -14,7 +14,6 @@ function AppView () {
 
 		this.currentView = view;
 		$("#shell").html(this.currentView.el);
-		this.currentView.render();
 	}
 }
 
@@ -22,6 +21,44 @@ MoreScores.Views.Index = Backbone.View.extend({
 	render: function() {
 		this.$el.append('<a href="#result">#result</a>');
 		this.$el.append('<a href="#result/add">#result/add</a>');
+	}
+});
+
+MoreScores.Views.Login = Backbone.View.extend({
+	events: {
+		"submit form": "submit"
+	},
+
+	initialize: function () {
+		this.render();
+	},
+
+	render: function () {
+		this.$el.html( Mustache.to_html( Mustache.TEMPLATES.login, {}));
+	},
+
+	submit: function() {
+		var options = {
+			url: '/login',
+			method: 'GET',
+			data: $('form', this.el).serialize(),
+			success: function(result) {
+				console.log("Logged in");
+				console.debug(JSON.stringify(result));
+				MoreScores.session.set(result);
+				MoreScores.router.navigate(MoreScores.session.get('next') || '', true);
+			},
+			statusCode: {
+				404: function() {
+					alert('Incorrect username/password');
+				}
+			},
+			error: function(xhr, text) {
+				console.error("Error logging in: "+text+" "+xhr.status);
+			}
+		}
+		$.ajax(addParseOptions(options));
+		return false;
 	}
 });
 
