@@ -7,23 +7,34 @@ function pad(number, length) {
 }
 
 function isoStringToDate(string) {
-	var isoDate = /(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/;
+	var isoDate = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d{3})Z/;
 	var match = isoDate.exec(string);
 	if (!match) {
 		throw {type: 'TypeError', message: string+' is not an ISO-formatted string'}
 	}
-	return new Date(match[1], match[2] - 1, match[3], match[4], match[5], match[6]);
+	return new Date(match[1], match[2] - 1, match[3], match[4], match[5], match[6], match[7]);
 }
 function dateToIsoString(date) {
 
 	var isoString = date.getFullYear() + '-' +
 		pad((date.getMonth() + 1), 2) + '-' +
-		pad(date.getDate(), 2) + ' ' +
+		pad(date.getDate(), 2) + 'T' +
 		pad(date.getHours(), 2) + ':' +
 		pad(date.getMinutes(), 2) + ':' +
-		pad(date.getSeconds(), 2);
+		pad(date.getSeconds(), 2) + '.' +
+		pad(date.getMilliseconds(), 3) + 'Z';
 	return isoString;
 }
+function dateToParseDate(date) {
+	return {
+		__type: "Date",
+		iso: dateToIsoString(date)
+	}
+}
+function parseDateToDate(parseDate) {
+	return isoStringToDate(parseDate.iso);
+}
+
 function percentToSpectrum (percent) {
 	// translate a 0..100 value to a HSL color value
 	return "hsl(210, "+percent+"%, "+(100-percent/2)+"%)";

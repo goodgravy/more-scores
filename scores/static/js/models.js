@@ -16,18 +16,57 @@ Backbone.sync = function(method, model, options) {
 };
 
 MoreScores.Models.Result = Backbone.Model.extend({
+	idAttribute: "objectId",
 	parse: function(result) {
-		result.played = isoStringToDate(result.played);
+		if ("played" in result) {
+			result.played = parseDateToDate(result.played);
+		}
+
+		function pullUsersOut(key) {
+			var users = [];
+			var index = 0;
+			while (result[key+index]) {
+				// XXX: should be able to do this, or something similar, when figured out relational queries
+				// users.push(result[key+index]);
+				users.push(MoreScores.Collections.users.get(result[key+index].objectId).toJSON())
+				delete result[key+index];
+				index += 1;
+			}
+			return users;
+		}
+
+		result.winners = pullUsersOut("winner");
+		result.losers = pullUsersOut("loser");
 		return result;
 	},
 
 	toJSON: function() {
+		function toUserPointer(user) {
+			return { "__type": "Pointer",
+				"className": "User",
+				"objectId": user.id
+			}
+		}
 		var result = Backbone.Model.prototype.toJSON.call(this);
-		result.played = dateToIsoString(result.played);
+		result.played = dateToParseDate(result.played);
+		
+		result.winners.sort();
+		result.losers.sort();
+
+		_.each(result.winners, function(winner, index) {
+			result["winner"+index] = toUserPointer(winner);
+		});
+		_.each(result.losers, function(loser, index) {
+			result["loser"+index] = toUserPointer(loser);
+		});
+
+		delete result["winners"];
+		delete result["losers"];
 		return result;
 	}
 });
 MoreScores.Models.User = Backbone.Model.extend({
+	idAttribute: "objectId",
 	defaults: {
 		points: 0
 	}
@@ -58,6 +97,10 @@ MoreScores.Collections.Results = Backbone.Collection.extend({
 	url: '/classes/Result',
 	model: MoreScores.Models.Result,
 
+	parse: function(resp) {
+		return resp.results;
+	},
+
 	comparator: function(result) {
 		return result.get('played');
 	},
@@ -79,10 +122,8 @@ MoreScores.Collections.Results = Backbone.Collection.extend({
 		});
 		function realUser(userJson) {
 			// return existing user matching userJson, or create a new one in collection
-			var user = MoreScores.Collections.users.get(userJson.id);
-			if (!user) {
-				user = MoreScores.Collections.users.add(userJson);
-			}
+			var newUser = new MoreScores.Models.User(userJson);
+			user = MoreScores.Collections.users.get(newUser.id) || MoreScores.Collections.users.add(newUser);
 			return user;
 		}
 
@@ -127,6 +168,10 @@ MoreScores.Collections.Results = Backbone.Collection.extend({
 MoreScores.Collections.Users = Backbone.Collection.extend({
 	url: '/users',
 	model: MoreScores.Models.User,
+
+	parse: function (resp) {
+		return resp.results;
+	},
 
 	comparator: function(user) {
 		return user.id;
