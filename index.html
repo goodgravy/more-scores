@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+	<script type="text/javascript" src="/js/mustache.js"></script>
+	<script type="text/javascript" src="/js/underscore.js"></script>
+	<script type="text/javascript" src="/js/backbone.js"></script>
+	<script type='text/javascript' src='http://www.google.com/jsapi'></script>
+	<script type="text/javascript" src="/js/date.js"></script>
+	<script type="text/javascript" src="/js/scores.js"></script>
+	<script type="text/javascript" src="/js/chart.js"></script>
+	<script type="text/javascript" src="/js/routes.js"></script>
+	<script type="text/javascript" src="/js/views.js"></script>
+	<script type="text/javascript" src="/js/models.js"></script>
+	<script type="text/javascript" src="/js/utils.js"></script>
+	<script type='text/javascript'>
+		google.load('visualization', '1', {'packages':['annotatedtimeline', 'table']});
+		google.setOnLoadCallback(MoreScores.init);
+	</script>
+	<link type="text/css" rel="stylesheet" href="/css/scores.css" />
+</head>
+<body>
+	<script type="text/x-mustache">
+<form action="#" method="get" accept-charset="utf-8">
+	<label for="username">
+		<input type="text" name="username" autofocus="autofocus" placeholder="username" />
+	</label>
+	<label for="password">
+		<input type="text" name="password" placeholder="password" />
+	</label>
+	<input type="submit" name="submit" value="submit" />
+</form>
+	</script>
+	<div id="shell">
+	</div>
+</body>
+</html>

@@ -175,7 +175,7 @@ MoreScores.Collections.Users = Backbone.Collection.extend({
 	},
 
 	comparator: function(user) {
-		return user.id;
+		return user.get('username');
 	}
 });
 

@@ -29,6 +29,7 @@ MoreScores.Router = Backbone.Router.extend({
 			collection: MoreScores.Collections.results
 		});
 		this.appView.showView(resultAddView);
+		resultAddView.render();
 	},
 
 	result_user: function(username) {
